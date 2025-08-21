@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sleek Calculator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        /* CSS for Styling */
+        :root {
+            --bg-color: #1e1e1e;
+            --display-bg: #2a2a2a;
+            --button-bg: #3a3a3a;
+            --operator-bg: #ff9500;
+            --special-bg: #a5a5a5;
+            --text-color: #ffffff;
+            --special-text-color: #000000;
+        }
+
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--bg-color);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .calculator {
+            width: 100%;
+            max-width: 340px;
+            background-color: #000;
+            border-radius: 30px;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+        
+        
+
+        .display-container {
+            width: 100%;
+            text-align: right;
+            margin-bottom: 20px;
+            padding: 20px;
+            box-sizing: border-box;
+            color: var(--text-color);
+        }
+        
+        #previous-operand {
+            min-height: 24px;
+            font-size: 1.2em;
+            color: #aaa;
+        }
+
+        #current-operand {
+            min-height: 56px;
+            font-size: 3.5em;
+            font-weight: 500;
+            word-wrap: break-word;
+            word-break: break-all;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .btn {
+            width: 100%;
+            height: 70px;
+            font-size: 1.8em;
+            border: none;
+            border-radius: 50%; /* Makes buttons circular */
+            cursor: pointer;
+            background-color: var(--button-bg);
+            color: var(--text-color);
+            transition: filter 0.2s;
+        }
+
+        .btn:active {
+            filter: brightness(1.5);
+        }
+
+        .btn.operator {
+            background-color: var(--operator-bg);
+        }
+
+        .btn.special {
+            background-color: var(--special-bg);
+            color: var(--special-text-color);
+        }
+
+        /* Span button '0' across two columns */
+        .btn.span-two {
+            grid-column: span 2;
+            border-radius: 35px; /* Pill shape */
+            text-align: left;
+            padding-left: 28px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calculator">
+        <div class="display-container">
+            <div id="previous-operand"></div>
+            <div id="current-operand">0</div>
+        </div>
+        <div class="buttons">
+            <button class="btn special" onclick="clearDisplay()">AC</button>
+            <button class="btn special" onclick="toggleSign()">+/-</button>
+            <button class="btn special" onclick="appendCharacter('%')">%</button>
+            <button class="btn operator" onclick="chooseOperator('/')">÷</button>
+            
+            <button class="btn" onclick="appendCharacter('7')">7</button>
+            <button class="btn" onclick="appendCharacter('8')">8</button>
+            <button class="btn" onclick="appendCharacter('9')">9</button>
+            <button class="btn operator" onclick="chooseOperator('*')">×</button>
+            
+            <button class="btn" onclick="appendCharacter('4')">4</button>
+            <button class="btn" onclick="appendCharacter('5')">5</button>
+            <button class="btn" onclick="appendCharacter('6')">6</button>
+            <button class="btn operator" onclick="chooseOperator('-')">−</button>
+
+            <button class="btn" onclick="appendCharacter('1')">1</button>
+            <button class="btn" onclick="appendCharacter('2')">2</button>
+            <button class="btn" onclick="appendCharacter('3')">3</button>
+            <button class="btn operator" onclick="chooseOperator('+')">+</button>
+
+            <button class="btn span-two" onclick="appendCharacter('0')">0</button>
+            <button class="btn" onclick="appendCharacter('.')">.</button>
+            <button class="btn operator" onclick="calculate()">=</button>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript Logic
+        const currentOperandElem = document.getElementById('current-operand');
+        const previousOperandElem = document.getElementById('previous-operand');
+
+        let currentInput = '0';
+        let previousInput = '';
+        let operator = null;
+
+        function updateDisplay() {
+            currentOperandElem.innerText = currentInput;
+            if (operator != null) {
+                previousOperandElem.innerText = `${previousInput} ${operator}`;
+            } else {
+                previousOperandElem.innerText = '';
+            }
+        }
+
+        function appendCharacter(char) {
+            if (char === '.' && currentInput.includes('.')) return;
+            if (currentInput === '0' && char !== '.') {
+                currentInput = char;
+            } else {
+                currentInput += char;
+            }
+            updateDisplay();
+        }
+
+        function clearDisplay() {
+            currentInput = '0';
+            previousInput = '';
+            operator = null;
+            updateDisplay();
+        }
+
+        function chooseOperator(op) {
+            if (currentInput === '') return;
+            if (previousInput !== '') {
+                calculate();
+            }
+            operator = op;
+            previousInput = currentInput;
+            currentInput = '';
+            updateDisplay();
+        }
+        
+        function toggleSign() {
+            if (currentInput === '0' || currentInput === '') return;
+            currentInput = (parseFloat(currentInput) * -1).toString();
+            updateDisplay();
+        }
+
+        function calculate() {
+            let result;
+            const prev = parseFloat(previousInput);
+            const current = parseFloat(currentInput);
+
+            if (isNaN(prev) || isNaN(current)) return;
+
+            switch (operator) {
+                case '+': result = prev + current; break;
+                case '-': result = prev - current; break;
+                case '*': result = prev * current; break;
+                case '/': result = prev / current; break;
+                case '%': result = prev % current; break;
+                default: return;
+            }
+
+            currentInput = result.toString();
+            operator = null;
+            previousInput = '';
+            updateDisplay();
+        }
+
+    </script>
+
+</body>
+</html>
